@@ -22,12 +22,30 @@ class Announcer(MycroftSkill):
         announcements = self.parse_file(self.announcements_filepath)
         self.schedule_announcements(announcements)
 
-    def test_cancel(self):
-        self.cancel_scheduled_event("announce")
+    def cancel_announcement(self, annc_name):
+        self.cancel_scheduled_event(annc_name)
+        self.announcement_events.clear(annc_name)
+
+    def cancel_all_annc(self):
+        self.log.info("Before %s" % self.announcement_events)
+        for annc_name in self.announcement_events:
+            self.cancel_scheduled_event(annc_name)
+            self.log.info("Cancelling event: %s" % annc_name)
+        self.announcement_events.clear()
+        self.log.info("After %s" % self.announcement_events)
 
     @intent_file_handler('announcer.intent')
     def handle_announcer(self, message):
         self.speak_dialog('announcer')
+
+    @intent_file_handler('reload_announcements.intent')
+    def handle_reload_announcements(self, message):
+
+        self.cancel_all_annc()
+        announcements = self.parse_file(self.announcements_filepath)
+        self.schedule_announcements(announcements)
+        self.speak_dialog('Announcements file reloaded.')
+        self.log.info("Current %s" % self.announcement_events)
 
     def parse_file(self, filename):
         lines = open(filename, "r")
@@ -82,7 +100,7 @@ class Announcer(MycroftSkill):
             self.announcement_events.append(event_name_hash)
 
     def announce(self, msg):
-        phrase = copy.copy(msg.data["phrase"])
+        phrase = msg.data["phrase"]
         self.log.info("Announcement: %s" % (phrase))
         self.speak(phrase, expect_response=False)
 
