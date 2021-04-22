@@ -49,7 +49,7 @@ class Announcer(MycroftSkill):
         str_split = line.split("|")
         dt = self.parse_datetime(str_split[0])
         annc = str_split[1]
-        freq = str_split[2]
+        freq = int(str_split[2])
         annc_tuple = (dt, annc, freq)
         return annc_tuple
 
